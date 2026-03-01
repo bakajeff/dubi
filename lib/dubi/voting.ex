@@ -197,4 +197,9 @@ defmodule Dubi.Voting do
   def change_option(%Option{} = option, attrs \\ %{}) do
     Option.changeset(option, attrs)
   end
+
+  def increment_vote(option_id) do
+    from(o in Option, where: o.id == ^option_id)
+    |> Repo.update_all(inc: [votes: 1])
+  end
 end
