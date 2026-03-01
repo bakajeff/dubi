@@ -1,0 +1,19 @@
+defmodule Dubi.Voting.Option do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "options" do
+    field :label, :string
+    field :votes, :integer
+    belongs_to :poll, Dubi.Voting.Poll
+
+    timestamps(type: :utc_datetime)
+  end
+
+  @doc false
+  def changeset(option, attrs) do
+    option
+    |> cast(attrs, [:label, :votes])
+    |> validate_required([:label, :votes])
+  end
+end
