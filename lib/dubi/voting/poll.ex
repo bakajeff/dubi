@@ -5,7 +5,7 @@ defmodule Dubi.Voting.Poll do
   schema "polls" do
     field :question, :string
     field :slug, :string
-    has_many :options, Dubi.Voting.Option
+    has_many :options, Dubi.Voting.Option, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -22,6 +22,11 @@ defmodule Dubi.Voting.Poll do
     poll
     |> cast(attrs, [:question])
     |> validate_required([:question])
+    |> cast_assoc(:options,
+      with: &Dubi.Voting.Option.changeset/2,
+      required: true,
+      message: "Please provide at least two options"
+    )
     |> generate_slug()
     |> unique_constraint(:slug)
   end

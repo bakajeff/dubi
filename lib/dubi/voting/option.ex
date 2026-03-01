@@ -14,6 +14,6 @@ defmodule Dubi.Voting.Option do
   def changeset(option, attrs) do
     option
     |> cast(attrs, [:label, :votes])
-    |> validate_required([:label, :votes])
+    |> validate_required([:label])
   end
 end
