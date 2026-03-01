@@ -202,4 +202,10 @@ defmodule Dubi.Voting do
     from(o in Option, where: o.id == ^option_id)
     |> Repo.update_all(inc: [votes: 1])
   end
+
+  def get_poll_by_slug!(slug) do
+    Poll
+    |> Repo.get_by!(slug: slug)
+    |> Repo.preload(:options)
+  end
 end

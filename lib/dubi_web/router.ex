@@ -18,6 +18,10 @@ defmodule DubiWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/polls/new", PollLive.New, :new
+
+    live "/polls/:slug", PollLive.Show, :show
   end
 
   # Other scopes may use custom stacks.
