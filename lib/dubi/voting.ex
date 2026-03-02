@@ -35,7 +35,7 @@ defmodule Dubi.Voting do
       ** (Ecto.NoResultsError)
 
   """
-  def get_poll!(id), do: Repo.get!(Poll, id)
+  def get_poll!(id), do: Repo.get!(Poll, id) |> Repo.preload(:options)
 
   @doc """
   Creates a poll.
@@ -199,8 +199,19 @@ defmodule Dubi.Voting do
   end
 
   def increment_vote(option_id) do
-    from(o in Option, where: o.id == ^option_id)
-    |> Repo.update_all(inc: [votes: 1])
+    Repo.transact(fn ->
+      {1, _} =
+        from(o in Option, where: o.id == ^option_id)
+        |> Repo.update_all(inc: [votes: 1])
+
+      option = Repo.get(Option, option_id)
+      poll = get_poll!(option.poll_id) |> Repo.preload(:options)
+
+      # Broadcast the update
+      DubiWeb.Endpoint.broadcast("poll:#{poll.slug}", "vote_updated", poll)
+
+      {:ok, poll}
+    end)
   end
 
   def get_poll_by_slug!(slug) do
