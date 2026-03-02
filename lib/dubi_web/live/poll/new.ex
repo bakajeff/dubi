@@ -1,4 +1,4 @@
-defmodule DubiWeb.PollLive.New do
+defmodule DubiWeb.Poll.New do
   use DubiWeb, :live_view
   alias Dubi.Voting
   alias Dubi.Voting.{Poll, Option}
