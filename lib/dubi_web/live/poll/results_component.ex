@@ -17,17 +17,46 @@ defmodule DubiWeb.Poll.ResultsComponent do
             <span>{percent}% ({option.votes})</span>
           </div>
 
-          <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-            <div
-              class="bg-indigo-600 h-full transition-all duration-500 ease-out"
-              style={"width: #{percent}%"}
-            >
-            </div>
-          </div>
+          <progress class="progress progress-primary w-full" value={percent} max="100"></progress>
         </div>
       <% end %>
-      <p class="text-center text-gray-500 text-sm mt-4">Total votes: {@total_votes}</p>
+
+      <div class="divider" />
+
+      <p class="text-gray-500 text-sm mt-4">Total votes: {@total_votes}</p>
+
+      <div class="flex gap-4">
+        <div
+          class="btn btn-soft btn-primary"
+          id="btn-share"
+          phx-hook=".CopyToClipboard"
+          data-share-link={"http://localhost:4000/polls/#{@poll.slug}"}
+        >
+          <.icon name="hero-share" /> Share
+        </div>
+      </div>
     </div>
+
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".CopyToClipboard">
+      export default {
+        mounted() {
+          this.el.addEventListener("click", event => {
+            const link = this.el.getAttribute("data-share-link");
+
+            navigator.clipboard.writeText(link).then(() => {
+              const originalText = this.el.innerText;
+              this.el.innerText = "Copied! ✅";
+              this.el.classList.add("btn-success");
+
+              setTimeout(() => {
+                this.el.innerText = originalText;
+                this.el.classList.remove("btn-success");
+              }, 2000);
+            });
+          });
+        }
+      }
+    </script>
     """
   end
 
