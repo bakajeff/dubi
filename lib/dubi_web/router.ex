@@ -20,8 +20,8 @@ defmodule DubiWeb.Router do
     get "/", PageController, :home
 
     live "/polls/new", Poll.New, :new
-
     live "/polls/:slug", Poll.Show, :show
+    live "/polls/:slug/results", Poll.Show, :results
   end
 
   # Other scopes may use custom stacks.
