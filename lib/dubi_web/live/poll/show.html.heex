@@ -7,15 +7,15 @@
     <form phx-submit="vote" class="space-y-4">
       <%= for option <- @poll.options do %>
         <div>
-          <label class="">
+          <label class="card bg-base-300 p-4 cursor-pointer">
             <input
               type="radio"
               name="option_id"
               value={option.id}
               required
-              class="radio mr-2"
+              class="hidden"
             />
-            <span>{option.label}</span>
+            <p>{option.label}</p>
           </label>
         </div>
       <% end %>
