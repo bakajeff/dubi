@@ -30,7 +30,7 @@ defmodule DubiWeb.Poll.ResultsComponent do
           class="btn btn-soft btn-primary"
           id="btn-share"
           phx-hook=".CopyToClipboard"
-          data-share-link={"http://localhost:4000/polls/#{@poll.slug}"}
+          data-share-link={"#{DubiWeb.Endpoint.url()}/polls/#{@poll.slug}"}
         >
           <.icon name="hero-share" /> Share
         </div>
