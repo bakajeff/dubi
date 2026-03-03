@@ -204,11 +204,8 @@ defmodule Dubi.Voting do
         from(o in Option, where: o.id == ^option_id)
         |> Repo.update_all(inc: [votes: 1])
 
-      option = Repo.get(Option, option_id)
+      option = Repo.get!(Option, option_id)
       poll = get_poll!(option.poll_id) |> Repo.preload(:options)
-
-      # Broadcast the update
-      DubiWeb.Endpoint.broadcast("poll:#{poll.slug}", "vote_updated", poll)
 
       {:ok, poll}
     end)

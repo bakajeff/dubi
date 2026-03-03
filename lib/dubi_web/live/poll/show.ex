@@ -1,6 +1,7 @@
 defmodule DubiWeb.Poll.Show do
   use DubiWeb, :live_view
   alias Dubi.Voting
+  alias Phoenix.Socket
 
   def mount(%{"slug" => slug}, _session, socket) do
     # connection?(socket) ensures it only subscribes once the
@@ -19,16 +20,31 @@ defmodule DubiWeb.Poll.Show do
   end
 
   def handle_event("vote", %{"option_id" => option_id}, socket) do
-    Voting.increment_vote(option_id)
+    case Voting.increment_vote(option_id) do
+      {:ok, poll} ->
+        DubiWeb.Endpoint.broadcast("poll:#{poll.slug}", "vote_updated", %{
+          options: Enum.map(poll.options, &%{id: &1.id, votes: &1.votes})
+        })
 
-    updated_poll = Voting.get_poll_by_slug!(socket.assigns.poll.slug)
+        {:noreply, assign(socket, poll: poll, voted: true)}
 
-    {:noreply, assign(socket, poll: updated_poll, voted: true)}
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Could not register vote, please try again")}
+    end
   end
 
-  def handle_info(%Phoenix.Socket.Broadcast{event: "vote_updated", payload: updated_poll}, socket) do
-    # Swap the old poll data with the new data
-    # LiveView handles the UI diff
-    {:noreply, assign(socket, poll: updated_poll)}
+  def handle_info(
+        %Socket.Broadcast{event: "vote_updated", payload: %{options: options}},
+        socket
+      ) do
+    updated_options =
+      Enum.map(socket.assigns.poll.options, fn option ->
+        case Enum.find(options, &(&1.id == option.id)) do
+          nil -> option
+          updated -> %{option | votes: updated.votes}
+        end
+      end)
+
+    {:noreply, assign(socket, poll: %{socket.assigns.poll | options: updated_options})}
   end
 end
