@@ -5,11 +5,6 @@ defmodule Dubi.VotingFixtures do
   """
 
   @doc """
-  Generate a unique poll slug.
-  """
-  def unique_poll_slug, do: "some slug#{System.unique_integer([:positive])}"
-
-  @doc """
   Generate a poll.
   """
   def poll_fixture(attrs \\ %{}) do
@@ -17,11 +12,14 @@ defmodule Dubi.VotingFixtures do
       attrs
       |> Enum.into(%{
         question: "some question",
-        slug: unique_poll_slug()
+        options: [
+          %{label: "first option"},
+          %{label: "second option"}
+        ]
       })
       |> Dubi.Voting.create_poll()
 
-    poll
+    Dubi.Voting.get_poll!(poll.id)
   end
 
   @doc """

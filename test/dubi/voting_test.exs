@@ -8,11 +8,12 @@ defmodule Dubi.VotingTest do
 
     import Dubi.VotingFixtures
 
-    @invalid_attrs %{question: nil, slug: nil}
+    @invalid_attrs %{question: nil, options: []}
 
     test "list_polls/0 returns all polls" do
       poll = poll_fixture()
-      assert Voting.list_polls() == [poll]
+      assert [%Poll{id: poll_id}] = Voting.list_polls()
+      assert poll_id == poll.id
     end
 
     test "get_poll!/1 returns the poll with given id" do
@@ -21,11 +22,18 @@ defmodule Dubi.VotingTest do
     end
 
     test "create_poll/1 with valid data creates a poll" do
-      valid_attrs = %{question: "some question", slug: "some slug"}
+      valid_attrs = %{
+        question: "some question",
+        options: [
+          %{label: "first option"},
+          %{label: "second option"}
+        ]
+      }
 
       assert {:ok, %Poll{} = poll} = Voting.create_poll(valid_attrs)
       assert poll.question == "some question"
-      assert poll.slug == "some slug"
+      assert is_binary(poll.slug)
+      assert length(poll.options) == 2
     end
 
     test "create_poll/1 with invalid data returns error changeset" do
@@ -34,11 +42,11 @@ defmodule Dubi.VotingTest do
 
     test "update_poll/2 with valid data updates the poll" do
       poll = poll_fixture()
-      update_attrs = %{question: "some updated question", slug: "some updated slug"}
+      update_attrs = %{question: "some updated question"}
 
       assert {:ok, %Poll{} = poll} = Voting.update_poll(poll, update_attrs)
       assert poll.question == "some updated question"
-      assert poll.slug == "some updated slug"
+      assert is_binary(poll.slug)
     end
 
     test "update_poll/2 with invalid data returns error changeset" do

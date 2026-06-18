@@ -1,44 +1,66 @@
-<div class="container max-w-2xl mx-auto bg-base-200 p-8 rounded-lg">
-  <h1 class="">Question & Answers</h1>
-
-  <.form for={@form} phx-change="validate" phx-submit="save" class="space-y-4">
-    <div>
-      <.input field={@form[:question]} label="Ask a question" placeholder="What's on your mind?" />
+<Layouts.app flash={@flash}>
+  <div class="mx-auto max-w-2xl rounded-lg border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/70 sm:p-8 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div class="mb-6">
+      <p class="text-sm font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-300">
+        New poll
+      </p>
+      <h1 class="mt-2 text-2xl font-bold text-slate-950 dark:text-white">Question & Answers</h1>
     </div>
 
-    <div class="">
-      <label class="">Options</label>
-      <.inputs_for :let={option} field={@form[:options]}>
-        <div class="flex gap-2 items-center">
-          <div class="grow">
-            <.input field={option[:label]} placeholder={"Option #{option.index + 1}"} />
-          </div>
+    <.form
+      for={@form}
+      id="poll-form"
+      phx-change="validate"
+      phx-submit="save"
+      class="space-y-5"
+    >
+      <div>
+        <.input
+          field={@form[:question]}
+          label="Ask a question"
+          placeholder="What's on your mind?"
+        />
+      </div>
 
-          <button
-            type="button"
-            phx-click="remove-option"
-            phx-value-index={option.index}
-            class="btn btn-soft btn-circle btn-error -mt-2"
-          >
-            <.icon name="hero-minus" />
-          </button>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">
+          Options
+        </label>
+        <div class="space-y-3">
+          <.inputs_for :let={option} field={@form[:options]}>
+            <div class="flex items-start gap-2">
+              <div class="grow">
+                <.input field={option[:label]} placeholder={"Option #{option.index + 1}"} />
+              </div>
+
+              <button
+                type="button"
+                id={"remove-option-#{option.index}"}
+                phx-click="remove-option"
+                phx-value-index={option.index}
+                class="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-red-200 text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-4 focus:ring-red-500/15 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950"
+                aria-label="Remove option"
+              >
+                <.icon name="hero-minus" class="size-4" />
+              </button>
+            </div>
+          </.inputs_for>
         </div>
-      </.inputs_for>
-    </div>
+      </div>
 
-    <div>
-      <.button
-        type="button"
-        phx-click="add-option"
-      >
-        <.icon name="hero-plus-mini" /> Add option
-      </.button>
-    </div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <.button
+          type="button"
+          id="add-option"
+          phx-click="add-option"
+        >
+          <.icon name="hero-plus-mini" class="size-4" /> Add option
+        </.button>
 
-    <div class="flex justify-end">
-      <.button variant="primary">
-        Create Poll
-      </.button>
-    </div>
-  </.form>
-</div>
+        <.button id="create-poll" variant="primary">
+          Create Poll
+        </.button>
+      </div>
+    </.form>
+  </div>
+</Layouts.app>

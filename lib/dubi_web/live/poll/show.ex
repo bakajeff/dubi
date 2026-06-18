@@ -10,7 +10,7 @@ defmodule DubiWeb.Poll.Show do
 
     if connected?(socket), do: DubiWeb.Endpoint.subscribe("poll:#{slug}")
 
-    {:ok, assign(socket, poll: poll, slug: slug)}
+    {:ok, assign(socket, poll: poll, slug: slug, vote_form: to_form(%{}, as: :vote))}
   end
 
   def handle_params(_params, uri, socket) do
@@ -19,7 +19,7 @@ defmodule DubiWeb.Poll.Show do
     {:noreply, assign(socket, voted: voted, uri: uri)}
   end
 
-  def handle_event("vote", %{"option_id" => option_id}, socket) do
+  def handle_event("vote", %{"vote" => %{"option_id" => option_id}}, socket) do
     case Voting.increment_vote(option_id) do
       {:ok, poll} ->
         DubiWeb.Endpoint.broadcast("poll:#{poll.slug}", "vote_updated", %{
