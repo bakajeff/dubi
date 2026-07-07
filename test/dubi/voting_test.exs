@@ -65,6 +65,21 @@ defmodule Dubi.VotingTest do
       poll = poll_fixture()
       assert %Ecto.Changeset{} = Voting.change_poll(poll)
     end
+
+    test "increment_vote/1 increments an option and returns the updated poll" do
+      poll = poll_fixture()
+      option = hd(poll.options)
+
+      assert {:ok, updated_poll} = Voting.increment_vote(option.id)
+
+      updated_option = Enum.find(updated_poll.options, &(&1.id == option.id))
+      assert updated_poll.id == poll.id
+      assert updated_option.votes == option.votes + 1
+    end
+
+    test "increment_vote/1 returns an error for a missing option" do
+      assert {:error, :option_not_found} = Voting.increment_vote(-1)
+    end
   end
 
   describe "options" do
@@ -72,7 +87,7 @@ defmodule Dubi.VotingTest do
 
     import Dubi.VotingFixtures
 
-    @invalid_attrs %{label: nil, votes: nil}
+    @invalid_attrs %{label: nil}
 
     test "list_options/0 returns all options" do
       option = option_fixture()
@@ -89,7 +104,7 @@ defmodule Dubi.VotingTest do
 
       assert {:ok, %Option{} = option} = Voting.create_option(valid_attrs)
       assert option.label == "some label"
-      assert option.votes == 42
+      assert option.votes == 0
     end
 
     test "create_option/1 with invalid data returns error changeset" do
@@ -102,7 +117,7 @@ defmodule Dubi.VotingTest do
 
       assert {:ok, %Option{} = option} = Voting.update_option(option, update_attrs)
       assert option.label == "some updated label"
-      assert option.votes == 43
+      assert option.votes == 0
     end
 
     test "update_option/2 with invalid data returns error changeset" do

@@ -29,8 +29,7 @@ defmodule Dubi.VotingFixtures do
     {:ok, option} =
       attrs
       |> Enum.into(%{
-        label: "some label",
-        votes: 42
+        label: "some label"
       })
       |> Dubi.Voting.create_option()
 

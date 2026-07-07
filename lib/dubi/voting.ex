@@ -9,7 +9,7 @@ defmodule Dubi.Voting do
   alias Dubi.Voting.Poll
 
   @doc """
-  Returns the list of polls.
+  Returns the list of polls without preloading options.
 
   ## Examples
 
@@ -22,7 +22,7 @@ defmodule Dubi.Voting do
   end
 
   @doc """
-  Gets a single poll.
+  Gets a single poll with its options.
 
   Raises `Ecto.NoResultsError` if the Poll does not exist.
 
@@ -38,7 +38,7 @@ defmodule Dubi.Voting do
   def get_poll!(id), do: Repo.get!(Poll, id) |> Repo.preload(:options)
 
   @doc """
-  Creates a poll.
+  Creates a poll and its nested options.
 
   ## Examples
 
@@ -198,19 +198,28 @@ defmodule Dubi.Voting do
     Option.changeset(option, attrs)
   end
 
+  @doc """
+  Atomically increments a poll option vote and returns the updated poll.
+  """
   def increment_vote(option_id) do
     Repo.transact(fn ->
-      {1, _} =
-        from(o in Option, where: o.id == ^option_id)
-        |> Repo.update_all(inc: [votes: 1])
+      case from(o in Option, where: o.id == ^option_id)
+           |> Repo.update_all(inc: [votes: 1]) do
+        {1, _} ->
+          option = Repo.get!(Option, option_id)
+          {:ok, get_poll!(option.poll_id)}
 
-      option = Repo.get!(Option, option_id)
-      poll = get_poll!(option.poll_id) |> Repo.preload(:options)
-
-      {:ok, poll}
+        {0, _} ->
+          {:error, :option_not_found}
+      end
     end)
   end
 
+  @doc """
+  Gets a single poll by slug with its options.
+
+  Raises `Ecto.NoResultsError` if the Poll does not exist.
+  """
   def get_poll_by_slug!(slug) do
     Poll
     |> Repo.get_by!(slug: slug)

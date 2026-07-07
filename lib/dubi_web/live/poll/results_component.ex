@@ -4,23 +4,28 @@ defmodule DubiWeb.Poll.ResultsComponent do
   attr :poll, :any, required: true
 
   def render(assigns) do
-    total_votes = Enum.sum(Enum.map(assigns.poll.options, &(&1.votes || 0)))
-    assigns = assign(assigns, :total_votes, total_votes)
+    total_votes = total_votes(assigns.poll.options)
+
+    assigns =
+      assigns
+      |> assign(:total_votes, total_votes)
+      |> assign(:results, results(assigns.poll.options, total_votes))
 
     ~H"""
     <div id="poll-results" class="space-y-6">
-      <%= for option <- @poll.options do %>
-        <% percent = get_percent(option.votes || 0, @total_votes) %>
+      <%= for result <- @results do %>
         <div class="relative">
           <div class="flex justify-between mb-1 text-sm font-semibold">
-            <span class="text-slate-800 dark:text-slate-200">{option.label}</span>
-            <span class="text-slate-500 dark:text-slate-400">{percent}% ({option.votes || 0})</span>
+            <span class="text-slate-800 dark:text-slate-200">{result.label}</span>
+            <span class="text-slate-500 dark:text-slate-400">
+              {result.percent}% ({result.votes})
+            </span>
           </div>
 
           <div class="h-3 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div
               class="h-3 rounded-full bg-orange-500 transition-[width] duration-500"
-              style={"width: #{percent}%"}
+              style={"width: #{result.percent}%"}
             >
             </div>
           </div>
@@ -70,6 +75,24 @@ defmodule DubiWeb.Poll.ResultsComponent do
     """
   end
 
-  defp get_percent(votes, total) when total > 0, do: round(votes / total * 100)
-  defp get_percent(_votes, _total), do: 0
+  defp results(options, total_votes) do
+    Enum.map(options, fn option ->
+      votes = option.votes || 0
+
+      %{
+        label: option.label,
+        votes: votes,
+        percent: percent(votes, total_votes)
+      }
+    end)
+  end
+
+  defp total_votes(options) do
+    options
+    |> Enum.map(&(&1.votes || 0))
+    |> Enum.sum()
+  end
+
+  defp percent(votes, total) when total > 0, do: round(votes / total * 100)
+  defp percent(_votes, _total), do: 0
 end

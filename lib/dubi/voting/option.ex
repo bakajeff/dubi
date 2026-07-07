@@ -4,7 +4,7 @@ defmodule Dubi.Voting.Option do
 
   schema "options" do
     field :label, :string
-    field :votes, :integer
+    field :votes, :integer, default: 0
     belongs_to :poll, Dubi.Voting.Poll
 
     timestamps(type: :utc_datetime)
@@ -13,7 +13,7 @@ defmodule Dubi.Voting.Option do
   @doc false
   def changeset(option, attrs) do
     option
-    |> cast(attrs, [:label, :votes])
+    |> cast(attrs, [:label])
     |> validate_required([:label])
   end
 end
