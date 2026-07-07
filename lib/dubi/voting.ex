@@ -232,23 +232,6 @@ defmodule Dubi.Voting do
   end
 
   @doc """
-  Atomically increments a poll option vote and returns the updated poll.
-  """
-  def increment_vote(option_id) do
-    Repo.transact(fn ->
-      case from(o in Option, where: o.id == ^option_id)
-           |> Repo.update_all(inc: [votes: 1]) do
-        {1, _} ->
-          option = Repo.get!(Option, option_id)
-          {:ok, get_poll!(option.poll_id)}
-
-        {0, _} ->
-          {:error, :option_not_found}
-      end
-    end)
-  end
-
-  @doc """
   Gets a single poll by slug with its options.
 
   Raises `Ecto.NoResultsError` if the Poll does not exist.

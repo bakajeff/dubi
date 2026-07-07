@@ -66,21 +66,6 @@ defmodule Dubi.VotingTest do
       assert %Ecto.Changeset{} = Voting.change_poll(poll)
     end
 
-    test "increment_vote/1 increments an option and returns the updated poll" do
-      poll = poll_fixture()
-      option = hd(poll.options)
-
-      assert {:ok, updated_poll} = Voting.increment_vote(option.id)
-
-      updated_option = Enum.find(updated_poll.options, &(&1.id == option.id))
-      assert updated_poll.id == poll.id
-      assert updated_option.votes == option.votes + 1
-    end
-
-    test "increment_vote/1 returns an error for a missing option" do
-      assert {:error, :option_not_found} = Voting.increment_vote(-1)
-    end
-
     test "vote/2 records a vote and returns the updated poll" do
       poll = poll_fixture()
       option = hd(poll.options)
