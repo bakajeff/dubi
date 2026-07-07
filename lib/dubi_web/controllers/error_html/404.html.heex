@@ -1,0 +1,14 @@
+<Layouts.app flash={assigns[:flash] || %{}}>
+  <div class="mx-auto max-w-md py-32 text-center">
+    <h1 class="text-6xl font-bold text-slate-200 dark:text-slate-800">404</h1>
+    <p class="mt-4 text-lg text-slate-500 dark:text-slate-400">Page not found</p>
+    <div class="mt-8">
+      <.link
+        navigate={~p"/"}
+        class="inline-flex items-center gap-2 rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-orange-500"
+      >
+        Go home
+      </.link>
+    </div>
+  </div>
+</Layouts.app>

@@ -10,12 +10,19 @@ defmodule DubiWeb.Poll.Show do
 
     {:ok,
      assign(socket, poll: poll, slug: slug, vote_form: to_form(%{"voter_token" => ""}, as: :vote))}
+  rescue
+    Ecto.NoResultsError ->
+      {:ok, assign(socket, error: :not_found)}
   end
 
   def handle_params(_params, uri, socket) do
-    voted = socket.assigns.live_action == :results
+    if socket.assigns[:error] do
+      {:noreply, socket}
+    else
+      voted = socket.assigns.live_action == :results
 
-    {:noreply, assign(socket, voted: voted, uri: uri)}
+      {:noreply, assign(socket, voted: voted, uri: uri)}
+    end
   end
 
   def handle_event(
