@@ -25,15 +25,23 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/dubi"
 import topbar from "../vendor/topbar"
 
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)")
+
 const setTheme = (theme) => {
   if (theme === "system") {
     localStorage.removeItem("phx:theme")
-    document.documentElement.removeAttribute("data-theme")
+    document.documentElement.setAttribute("data-theme", prefersDark.matches ? "dark" : "light")
   } else {
     localStorage.setItem("phx:theme", theme)
     document.documentElement.setAttribute("data-theme", theme)
   }
 }
+
+prefersDark.addEventListener("change", (e) => {
+  if (!localStorage.getItem("phx:theme")) {
+    document.documentElement.setAttribute("data-theme", e.matches ? "dark" : "light")
+  }
+})
 
 if (!document.documentElement.hasAttribute("data-theme")) {
   setTheme(localStorage.getItem("phx:theme") || "system")
