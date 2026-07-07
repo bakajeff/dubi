@@ -39,9 +39,13 @@
           <% end %>
         </div>
 
-        <div class="pt-2">
+        <div class="flex items-center gap-3 pt-2">
           <.button id="submit-vote" type="submit" variant="primary">
             Submit Vote
+          </.button>
+
+          <.button id="view-results" navigate={~p"/polls/#{@poll.slug}/results"}>
+            <.icon name="hero-chart-bar" class="size-4" /> Results
           </.button>
         </div>
       </.form>
