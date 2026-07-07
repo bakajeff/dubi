@@ -80,6 +80,45 @@ defmodule Dubi.VotingTest do
     test "increment_vote/1 returns an error for a missing option" do
       assert {:error, :option_not_found} = Voting.increment_vote(-1)
     end
+
+    test "vote/2 records a vote and returns the updated poll" do
+      poll = poll_fixture()
+      option = hd(poll.options)
+      voter_token = "test-token-123"
+
+      assert {:ok, updated_poll} = Voting.vote(option.id, voter_token)
+
+      updated_option = Enum.find(updated_poll.options, &(&1.id == option.id))
+      assert updated_poll.id == poll.id
+      assert updated_option.votes == option.votes + 1
+    end
+
+    test "vote/2 prevents duplicate voting with the same voter token" do
+      poll = poll_fixture()
+      option = hd(poll.options)
+      voter_token = "test-token-456"
+
+      assert {:ok, _updated_poll} = Voting.vote(option.id, voter_token)
+      assert {:error, :already_voted} = Voting.vote(option.id, voter_token)
+    end
+
+    test "vote/2 allows different voter tokens to vote on the same poll" do
+      poll = poll_fixture()
+      option1 = hd(poll.options)
+      option2 = List.last(poll.options)
+
+      assert {:ok, _poll_after_first} = Voting.vote(option1.id, "token-a")
+      assert {:ok, poll_after_second} = Voting.vote(option2.id, "token-b")
+
+      updated_option1 = Enum.find(poll_after_second.options, &(&1.id == option1.id))
+      updated_option2 = Enum.find(poll_after_second.options, &(&1.id == option2.id))
+      assert updated_option1.votes == option1.votes + 1
+      assert updated_option2.votes == option2.votes + 1
+    end
+
+    test "vote/2 returns error for a missing option" do
+      assert {:error, :option_not_found} = Voting.vote(-1, "some-token")
+    end
   end
 
   describe "options" do

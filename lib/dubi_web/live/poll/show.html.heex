@@ -13,6 +13,12 @@
       <DubiWeb.Poll.ResultsComponent.render poll={@poll} />
     <% else %>
       <.form for={@vote_form} id="poll-vote-form" phx-submit="vote" class="space-y-4">
+        <input
+          type="hidden"
+          name={@vote_form[:voter_token].name}
+          id="voter-token"
+          phx-hook=".VoterToken"
+        />
         <div class="space-y-3">
           <%= for option <- @poll.options do %>
             <label
@@ -42,3 +48,16 @@
     <% end %>
   </div>
 </Layouts.app>
+
+<script :type={Phoenix.LiveView.ColocatedHook} name=".VoterToken">
+  export default {
+    mounted() {
+      let token = localStorage.getItem("voter_token");
+      if (!token) {
+        token = crypto.randomUUID();
+        localStorage.setItem("voter_token", token);
+      }
+      this.el.value = token;
+    }
+  }
+</script>

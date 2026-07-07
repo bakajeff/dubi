@@ -4,13 +4,12 @@ defmodule DubiWeb.Poll.Show do
   alias Phoenix.Socket
 
   def mount(%{"slug" => slug}, _session, socket) do
-    # connection?(socket) ensures it only subscribes once the
-    # websocket is actually open (not during the initial static page load)
     poll = Voting.get_poll_by_slug!(slug)
 
     if connected?(socket), do: DubiWeb.Endpoint.subscribe("poll:#{slug}")
 
-    {:ok, assign(socket, poll: poll, slug: slug, vote_form: to_form(%{}, as: :vote))}
+    {:ok,
+     assign(socket, poll: poll, slug: slug, vote_form: to_form(%{"voter_token" => ""}, as: :vote))}
   end
 
   def handle_params(_params, uri, socket) do
@@ -19,14 +18,21 @@ defmodule DubiWeb.Poll.Show do
     {:noreply, assign(socket, voted: voted, uri: uri)}
   end
 
-  def handle_event("vote", %{"vote" => %{"option_id" => option_id}}, socket) do
-    case Voting.increment_vote(option_id) do
+  def handle_event(
+        "vote",
+        %{"vote" => %{"option_id" => option_id, "voter_token" => voter_token}},
+        socket
+      ) do
+    case Voting.vote(option_id, voter_token) do
       {:ok, poll} ->
         DubiWeb.Endpoint.broadcast("poll:#{poll.slug}", "vote_updated", %{
           options: Enum.map(poll.options, &%{id: &1.id, votes: &1.votes})
         })
 
         {:noreply, assign(socket, poll: poll, voted: true)}
+
+      {:error, :already_voted} ->
+        {:noreply, put_flash(socket, :error, "You have already voted on this poll")}
 
       {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Could not register vote, please try again")}

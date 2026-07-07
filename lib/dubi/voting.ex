@@ -7,6 +7,7 @@ defmodule Dubi.Voting do
   alias Dubi.Repo
 
   alias Dubi.Voting.Poll
+  alias Dubi.Voting.Vote
 
   @doc """
   Returns the list of polls without preloading options.
@@ -196,6 +197,38 @@ defmodule Dubi.Voting do
   """
   def change_option(%Option{} = option, attrs \\ %{}) do
     Option.changeset(option, attrs)
+  end
+
+  @doc """
+  Records a vote for the given option, preventing duplicate voting
+  via a unique constraint on (poll_id, voter_token).
+  """
+  def vote(option_id, voter_token) do
+    Repo.transact(fn ->
+      case Repo.get(Option, option_id) do
+        nil ->
+          Repo.rollback(:option_not_found)
+
+        option ->
+          case Repo.insert(
+                 Vote.changeset(%Vote{}, %{
+                   poll_id: option.poll_id,
+                   option_id: option_id,
+                   voter_token: voter_token
+                 })
+               ) do
+            {:ok, _vote} ->
+              {1, _} =
+                from(o in Option, where: o.id == ^option_id)
+                |> Repo.update_all(inc: [votes: 1])
+
+              {:ok, get_poll!(option.poll_id)}
+
+            {:error, _changeset} ->
+              Repo.rollback(:already_voted)
+          end
+      end
+    end)
   end
 
   @doc """
